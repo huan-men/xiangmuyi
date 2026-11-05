@@ -67,6 +67,24 @@ python src/05_metrics.py
 
 **全链路实测耗时 9.3 秒**（14,736 行，本机 MySQL 8.0.26）。
 
+### 3.1 定时调度
+
+生产上这条管道应该挂在调度器上每天跑。两种写法：
+
+```bat
+:: Windows 任务计划：每天 02:00 跑一次
+schtasks /Create /TN "recruit_pipeline" /SC DAILY /ST 02:00 ^
+  /TR "D:\develop\项目一\run_pipeline.bat" /F
+```
+
+```bash
+# Linux crontab：每天 02:00 跑一次
+0 2 * * * cd /path/to/project && /usr/bin/python3 run_pipeline.py >> logs/cron.log 2>&1
+```
+
+> 注意：本项目的数据是**单时点快照**，每天跑一次不会产生新行——`03_load` 会输出「新增 0 / 未变 14,736」。
+> 这不是跑失败了，恰恰是幂等在起作用。接入真实增量数据源后，只需替换 `01_extract.py` 的取数逻辑，后四步一行都不用改。
+
 ## 4. 目录结构
 
 ```
