@@ -1,4 +1,4 @@
-# 数据不入库（体积大、可重新获取）
+﻿# 数据不入库（体积大、可重新获取）
 data/raw/
 data/clean/
 *.csv
@@ -19,3 +19,6 @@ venv/
 .idea/
 .vscode/
 *.iml
+
+# 个人学习笔记（不外传）
+notes/
