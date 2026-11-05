@@ -42,13 +42,10 @@ MySQL  recruit.job_post         14,736 行
 # 1. 依赖
 pip install pandas pymysql cryptography python-dotenv
 
-# 2. 配置数据库连接（复制模板后填自己的）
-#    .env 里写：
-#    DB_HOST=127.0.0.1
-#    DB_PORT=3306
-#    DB_USER=root
-#    DB_PASSWORD=你的密码
-#    DB_NAME=recruit
+# 2. 配置数据库连接：复制模板再填自己的密码
+#    Windows:   copy .env.example .env
+#    Linux/mac: cp .env.example .env
+#    .env 已被 .gitignore 忽略，不会进 Git
 
 # 3. 一条命令跑完整条管道
 python run_pipeline.py
