@@ -1,0 +1,21 @@
+# 数据不入库（体积大、可重新获取）
+data/raw/
+data/clean/
+*.csv
+*.xlsx
+
+# 日志不入库
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
