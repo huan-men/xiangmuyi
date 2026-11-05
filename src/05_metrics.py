@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 05_metrics.py —— 执行 sql/02_metrics.sql 里的指标查询，把结果打成表
 
@@ -19,13 +19,32 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pymysql
 
-from config.settings import DB_PASSWORD, PROJECT_ROOT, SQL_DIR, db_config
+from config.settings import DB_PASSWORD, LOG_DIR, PROJECT_ROOT, SQL_DIR, db_config
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
+
+
+class Tee:
+    """同时往控制台和日志文件写，保证「屏幕上看到的」和「落盘的」一字不差。"""
+
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data):
+        for s in self.streams:
+            s.write(data)
+        return len(data)
+
+    def flush(self):
+        for s in self.streams:
+            s.flush()
+
+    def isatty(self):
+        return False
 
 
 def disp_width(s: str) -> int:
@@ -93,22 +112,38 @@ def main():
         raise SystemExit(f"错误：找不到 {sql_path}")
 
     blocks = split_statements(sql_path.read_text(encoding="utf-8"))
-    print(f"执行 {sql_path.name}，共 {len(blocks)} 条查询\n")
 
     conn = pymysql.connect(**db_config())
+    log_fp = None
     try:
         with conn.cursor() as cur:
-            for idx, (title, body, _) in enumerate(blocks, start=1):
-                if title:
-                    print(f"【{idx}】{title}")
-                cur.execute(body)
-                if cur.description:
-                    headers = [d[0] for d in cur.description]
-                    rows = cur.fetchall()
-                    print_table(headers, rows)
-                print()
+            cur.execute("SELECT DATE_FORMAT(MAX(batch_date), '%Y%m%d') FROM job_post")
+            row = cur.fetchone()
+            batch = (row[0] if row else None) or "unknown"
+
+            LOG_DIR.mkdir(parents=True, exist_ok=True)
+            log_path = LOG_DIR / f"metrics_{batch}.log"
+            log_fp = open(log_path, "w", encoding="utf-8", newline="\n")
+            console = sys.stdout
+            sys.stdout = Tee(console, log_fp)
+            try:
+                print(f"执行 {sql_path.name}，共 {len(blocks)} 条查询\n")
+                for idx, (title, body, _) in enumerate(blocks, start=1):
+                    if title:
+                        print(f"【{idx}】{title}")
+                    cur.execute(body)
+                    if cur.description:
+                        headers = [d[0] for d in cur.description]
+                        rows = cur.fetchall()
+                        print_table(headers, rows)
+                    print()
+                print(f"日志已写入: {log_path}")
+            finally:
+                sys.stdout = console
     finally:
         conn.close()
+        if log_fp:
+            log_fp.close()
 
     return 0
 
