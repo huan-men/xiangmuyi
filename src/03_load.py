@@ -7,7 +7,7 @@
     输出  MySQL 表 job_post（幂等键 = position_id + batch_date）
     日志  logs/load_<批次>.log
 
-幂等验收（这就是面试时拿得出手的那句话）：
+幂等验收标准：
     连跑两次，第二次输出「新增 0 / 更新 0 / 未变 14736」，COUNT(*) 不变。
 
 为什么不用 df.to_sql：

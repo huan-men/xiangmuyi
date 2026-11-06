@@ -226,7 +226,7 @@ def chk_distribution(conn, batch):
     status = PASS
     if p1 < LOW_SALARY_HINT:
         status = WARN
-        lines.append("左下尾部偏低：算平均薪资时会被拉低，建议同时报中位数")
+        lines.append("下限尾部偏低：平均值会被拉低，建议同时报中位数")
     if p99 > HIGH_SALARY_HINT * 1.5:
         status = WARN
         lines.append("右上尾部很极端：均值会被拉高，结论里必须说明口径")

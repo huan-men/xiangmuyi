@@ -5,7 +5,7 @@
 -- 设计要点：
 -- 1. 幂等键 = (position_id, batch_date)
 --    同一岗位同一批次只存一条；不同批次 = 不同快照，可并存。
---    这样以后每天增量抓一批，数据只增不改历史，指标按 batch_date 取最新。
+--    每个批次增量写入，历史批次不被覆盖，指标按 batch_date 取最新批次。
 -- 2. batch_date 同时是项目二 Hive 表的分区键，先在这里埋好。
 -- 3. etl_time 用 DEFAULT CURRENT_TIMESTAMP，且**不参与** ON DUPLICATE KEY UPDATE：
 --    重跑时这一列不变，才能真正验证「重跑不产生差异」。
